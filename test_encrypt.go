@@ -22,7 +22,7 @@ func unpadding(data []byte) []byte {
 type DES struct {
 	key   [8]byte
 	iv    [8]byte
-	block cipher.Block
+	block *cipher.Block
 }
 
 func (d *DES) init(key, iv [8]byte) {
@@ -32,11 +32,11 @@ func (d *DES) init(key, iv [8]byte) {
 	if e != nil {
 		panic(e)
 	}
-	d.block = block
+	d.block = &block
 }
 
 func (d *DES) encrypt(data []byte) []byte {
-	mode := cipher.NewCBCEncrypter(d.block, d.iv[:])
+	mode := cipher.NewCBCEncrypter(*d.block, d.iv[:])
 	data = padding(data, mode.BlockSize())
 	result := make([]byte, len(data))
 	mode.CryptBlocks(result, data)
@@ -44,7 +44,7 @@ func (d *DES) encrypt(data []byte) []byte {
 }
 
 func (d *DES) decrypt(data []byte) []byte {
-	mode := cipher.NewCBCDecrypter(d.block, d.iv[:])
+	mode := cipher.NewCBCDecrypter(*d.block, d.iv[:])
 	result := make([]byte, len(data))
 	mode.CryptBlocks(result, data)
 	return unpadding(result)
